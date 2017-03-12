@@ -425,6 +425,9 @@
 // On the Info Screen, display XY with one decimal place when possible
 //#define LCD_DECIMAL_SMALL_XY
 
+// The timeout (in ms) to return to the status screen from sub-menus
+//#define LCD_TIMEOUT_TO_STATUS 15000
+
 #if ENABLED(SDSUPPORT)
 
   // Some RAMPS and other boards don't detect when an SD card is inserted. You can work
@@ -589,6 +592,31 @@
 
 #if ENABLED(LIN_ADVANCE)
   #define LIN_ADVANCE_K 75
+
+  /**
+   * Some Slicers produce Gcode with randomly jumping extrusion widths occasionally.
+   * For example within a 0.4mm perimeter it may produce a single segment of 0.05mm width.
+   * While this is harmless for normal printing (the fluid nature of the filament will
+   * close this very, very tiny gap), it throws off the LIN_ADVANCE pressure adaption.
+   *
+   * For this case LIN_ADVANCE_E_D_RATIO can be used to set the extrusion:distance ratio
+   * to a fixed value. Note that using a fixed ratio will lead to wrong nozzle pressures
+   * if the slicer is using variable widths or layer heights within one print!
+   *
+   * This option sets the default E:D ratio at startup. Use `M905` to override this value.
+   *
+   * Example: `M905 W0.4 H0.2 D1.75`, where:
+   *   - W is the extrusion width in mm
+   *   - H is the layer height in mm
+   *   - D is the filament diameter in mm
+   *
+   * Set to 0 to auto-detect the ratio based on given Gcode G1 print moves.
+   *
+   * Slic3r (including Prusa Slic3r) produces Gcode compatible with the automatic mode.
+   * Cura (as of this writing) may produce Gcode incompatible with the automatic mode.
+   */
+  #define LIN_ADVANCE_E_D_RATIO 0 // The calculated ratio (or 0) according to the formula W * H / ((D / 2) ^ 2 * PI)
+                                  // Example: 0.4 * 0.2 / ((1.75 / 2) ^ 2 * PI) = 0.033260135
 #endif
 
 // @section leveling
@@ -733,14 +761,15 @@
                                                      // even if it takes longer than DEFAULT_STEPPER_DEACTIVE_TIME.
 #endif
 
-/******************************************************************************\
- * enable this section if you have TMC26X motor drivers.
- * you need to import the TMC26XStepper library into the Arduino IDE for this
- ******************************************************************************/
-
 // @section tmc
 
+/**
+ * Enable this section if you have TMC26X motor drivers.
+ * You will need to import the TMC26XStepper library into the Arduino IDE for this
+ * (https://github.com/trinamic/TMC26XStepper.git)
+ */
 //#define HAVE_TMCDRIVER
+
 #if ENABLED(HAVE_TMCDRIVER)
 
   //#define X_IS_TMC
@@ -796,19 +825,24 @@
 
 #endif
 
-/******************************************************************************\
- * Enable this section if you have TMC2130 SPI stepper motor drivers.
- * You first need to import the TMC2130Stepper library into the Arduino IDE.
- * You can use the Arduino Library Manager for installation, or download from
- * https://github.com/teemuatlut/TMC2130Stepper
- ******************************************************************************/
+// @section TMC2130
 
+/**
+ * Enable this for SilentStepStick Trinamic TMC2130 SPI-configurable stepper drivers.
+ *
+ * You'll also need the TMC2130Stepper Arduino library
+ * (https://github.com/teemuatlut/TMC2130Stepper).
+ *
+ * To use TMC2130 stepper drivers in SPI mode connect your SPI2130 pins to
+ * the hardware SPI interface on your board and define the required CS pins
+ * in your `pins_MYBOARD.h` file. (e.g., RAMPS 1.4 uses AUX3 pins `X_CS_PIN 53`, `Y_CS_PIN 49`, etc.).
+ */
 //#define HAVE_TMC2130
 
 #if ENABLED(HAVE_TMC2130)
   #define STEALTHCHOP
 
-  /*
+  /**
    * Let Marlin automatically control stepper current.
    * This is still an experimental feature.
    * Increase current every 5s by CURRENT_STEP until stepper temperature prewarn gets triggered,
@@ -819,7 +853,19 @@
   #define CURRENT_STEP          50  // [mA]
   #define AUTO_ADJUST_MAX     1300  // [mA], 1300mA_rms = 1840mA_peak
 
-  /*
+  // CHOOSE YOUR MOTORS HERE, THIS IS MANDATORY
+  //#define X_IS_TMC2130
+  //#define X2_IS_TMC2130
+  //#define Y_IS_TMC2130
+  //#define Y2_IS_TMC2130
+  //#define Z_IS_TMC2130
+  //#define Z2_IS_TMC2130
+  //#define E0_IS_TMC2130
+  //#define E1_IS_TMC2130
+  //#define E2_IS_TMC2130
+  //#define E3_IS_TMC2130
+
+  /**
    * Stepper driver settings
    */
 
@@ -827,57 +873,47 @@
   #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
   #define INTERPOLATE          1  // Interpolate X/Y/Z_MICROSTEPS to 256
 
-  #define X_IS_TMC2130
   #define X_MAX_CURRENT     1000  // rms current in mA
   #define X_MICROSTEPS        16  // FULLSTEP..256
   #define X_CHIP_SELECT       40  // Pin
 
-  #define Y_IS_TMC2130
   #define Y_MAX_CURRENT     1000
   #define Y_MICROSTEPS        16
   #define Y_CHIP_SELECT       42
 
-  #define Z_IS_TMC2130
   #define Z_MAX_CURRENT     1000
   #define Z_MICROSTEPS        16
   #define Z_CHIP_SELECT       65
 
-  //#define X2_IS_TMC2130
   //#define X2_MAX_CURRENT  1000
   //#define X2_MICROSTEPS     16
   //#define X2_CHIP_SELECT    -1
 
-  //#define Y2_IS_TMC2130
   //#define Y2_MAX_CURRENT  1000
   //#define Y2_MICROSTEPS     16
   //#define Y2_CHIP_SELECT    -1
 
-  //#define Z2_IS_TMC2130
   //#define Z2_MAX_CURRENT  1000
   //#define Z2_MICROSTEPS     16
   //#define Z2_CHIP_SELECT    -1
 
-  //#define E0_IS_TMC2130
   //#define E0_MAX_CURRENT  1000
   //#define E0_MICROSTEPS     16
   //#define E0_CHIP_SELECT    -1
 
-  //#define E1_IS_TMC2130
   //#define E1_MAX_CURRENT  1000
   //#define E1_MICROSTEPS     16
   //#define E1_CHIP_SELECT    -1
 
-  //#define E2_IS_TMC2130
   //#define E2_MAX_CURRENT  1000
   //#define E2_MICROSTEPS     16
   //#define E2_CHIP_SELECT    -1
 
-  //#define E3_IS_TMC2130
   //#define E3_MAX_CURRENT  1000
   //#define E3_MICROSTEPS     16
   //#define E3_CHIP_SELECT    -1
 
-  /*
+  /**
    * You can set your own advanced settings by filling in predefined functions.
    * A list of available functions can be found on the library github page
    * https://github.com/teemuatlut/TMC2130Stepper
@@ -892,10 +928,11 @@
 
 #endif // ENABLED(HAVE_TMC2130)
 
-/******************************************************************************\
- * enable this section if you have L6470  motor drivers.
- * you need to import the L6470 library into the Arduino IDE for this
- ******************************************************************************/
+/**
+ * Enable this section if you have L6470 motor drivers.
+ * You need to import the L6470 library into the Arduino IDE for this.
+ * (https://github.com/ameyer/Arduino-L6470)
+ */
 
 // @section l6470
 
@@ -1013,6 +1050,12 @@
  */
 //#define EXTENDED_CAPABILITIES_REPORT
 
+/**
+ * Double-click the Encoder button on the Status Screen for Z Babystepping.
+ */
+//#define DOUBLECLICK_FOR_Z_BABYSTEPPING
+#define DOUBLECLICK_MAX_INTERVAL 1250   // Maximum interval between clicks, in milliseconds.
+                                        // Note: You may need to add extra time to mitigate controller latency.
 
 /**
  * Volumetric extrusion default state
@@ -1022,5 +1065,14 @@
  * M200 D0 to disable, M200 Dn to set a new diameter.
  */ 
 //#define VOLUMETRIC_DEFAULT_ON
+
+/**
+ * Enable this option for a leaner build of Marlin that removes all
+ * workspace offsets, simplifying coordinate transformations, leveling, etc.
+ *
+ *  - M206 and M428 are disabled.
+ *  - G92 will revert to its behavior from Marlin 1.0.
+ */
+//#define NO_WORKSPACE_OFFSETS
 
 #endif // CONFIGURATION_ADV_H

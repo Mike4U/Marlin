@@ -21,25 +21,15 @@
  */
 
 /**
-  stepper_indirection.c - stepper motor driver indirection
-  to allow some stepper functions to be done via SPI/I2c instead of direct pin manipulation
-  Part of Marlin
-
-  Copyright (c) 2015 Dominik Wenger
-
-  Marlin is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  Marlin is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with Marlin.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * stepper_indirection.cpp
+ *
+ * Stepper motor driver indirection to allow some stepper functions to
+ * be done via SPI/I2c instead of direct pin manipulation.
+ *
+ * Part of Marlin
+ *
+ * Copyright (c) 2015 Dominik Wenger
+ */
 
 #include "stepper_indirection.h"
 
@@ -53,118 +43,124 @@
   #include <SPI.h>
   #include <TMC26XStepper.h>
 
+  #define _TMC_DEFINE(ST) TMC26XStepper stepper##ST(200, ST##_ENABLE_PIN, ST##_STEP_PIN, ST##_DIR_PIN, ST##_MAX_CURRENT, ST##_SENSE_RESISTOR)
+
   #if ENABLED(X_IS_TMC)
-    TMC26XStepper stepperX(200, X_ENABLE_PIN, X_STEP_PIN, X_DIR_PIN, X_MAX_CURRENT, X_SENSE_RESISTOR);
+    _TMC_DEFINE(X);
   #endif
   #if ENABLED(X2_IS_TMC)
-    TMC26XStepper stepperX2(200, X2_ENABLE_PIN, X2_STEP_PIN, X2_DIR_PIN, X2_MAX_CURRENT, X2_SENSE_RESISTOR);
+    _TMC_DEFINE(X2);
   #endif
   #if ENABLED(Y_IS_TMC)
-    TMC26XStepper stepperY(200, Y_ENABLE_PIN, Y_STEP_PIN, Y_DIR_PIN, Y_MAX_CURRENT, Y_SENSE_RESISTOR);
+    _TMC_DEFINE(Y);
   #endif
   #if ENABLED(Y2_IS_TMC)
-    TMC26XStepper stepperY2(200, Y2_ENABLE_PIN, Y2_STEP_PIN, Y2_DIR_PIN, Y2_MAX_CURRENT, Y2_SENSE_RESISTOR);
+    _TMC_DEFINE(Y2);
   #endif
   #if ENABLED(Z_IS_TMC)
-    TMC26XStepper stepperZ(200, Z_ENABLE_PIN, Z_STEP_PIN, Z_DIR_PIN, Z_MAX_CURRENT, Z_SENSE_RESISTOR);
+    _TMC_DEFINE(Z);
   #endif
   #if ENABLED(Z2_IS_TMC)
-    TMC26XStepper stepperZ2(200, Z2_ENABLE_PIN, Z2_STEP_PIN, Z2_DIR_PIN, Z2_MAX_CURRENT, Z2_SENSE_RESISTOR);
+    _TMC_DEFINE(Z2);
   #endif
   #if ENABLED(E0_IS_TMC)
-    TMC26XStepper stepperE0(200, E0_ENABLE_PIN, E0_STEP_PIN, E0_DIR_PIN, E0_MAX_CURRENT, E0_SENSE_RESISTOR);
+    _TMC_DEFINE(E0);
   #endif
   #if ENABLED(E1_IS_TMC)
-    TMC26XStepper stepperE1(200, E1_ENABLE_PIN, E1_STEP_PIN, E1_DIR_PIN, E1_MAX_CURRENT, E1_SENSE_RESISTOR);
+    _TMC_DEFINE(E1);
   #endif
   #if ENABLED(E2_IS_TMC)
-    TMC26XStepper stepperE2(200, E2_ENABLE_PIN, E2_STEP_PIN, E2_DIR_PIN, E2_MAX_CURRENT, E2_SENSE_RESISTOR);
+    _TMC_DEFINE(E2);
   #endif
   #if ENABLED(E3_IS_TMC)
-    TMC26XStepper stepperE3(200, E3_ENABLE_PIN, E3_STEP_PIN, E3_DIR_PIN, E3_MAX_CURRENT, E3_SENSE_RESISTOR);
+    _TMC_DEFINE(E3);
   #endif
 
-void tmc_init() {
-  #if ENABLED(X_IS_TMC)
-    stepperX.setMicrosteps(X_MICROSTEPS);
-    stepperX.start();
-  #endif
-  #if ENABLED(X2_IS_TMC)
-    stepperX2.setMicrosteps(X2_MICROSTEPS);
-    stepperX2.start();
-  #endif
-  #if ENABLED(Y_IS_TMC)
-    stepperY.setMicrosteps(Y_MICROSTEPS);
-    stepperY.start();
-  #endif
-  #if ENABLED(Y2_IS_TMC)
-    stepperY2.setMicrosteps(Y2_MICROSTEPS);
-    stepperY2.start();
-  #endif
-  #if ENABLED(Z_IS_TMC)
-    stepperZ.setMicrosteps(Z_MICROSTEPS);
-    stepperZ.start();
-  #endif
-  #if ENABLED(Z2_IS_TMC)
-    stepperZ2.setMicrosteps(Z2_MICROSTEPS);
-    stepperZ2.start();
-  #endif
-  #if ENABLED(E0_IS_TMC)
-    stepperE0.setMicrosteps(E0_MICROSTEPS);
-    stepperE0.start();
-  #endif
-  #if ENABLED(E1_IS_TMC)
-    stepperE1.setMicrosteps(E1_MICROSTEPS);
-    stepperE1.start();
-  #endif
-  #if ENABLED(E2_IS_TMC)
-    stepperE2.setMicrosteps(E2_MICROSTEPS);
-    stepperE2.start();
-  #endif
-  #if ENABLED(E3_IS_TMC)
-    stepperE3.setMicrosteps(E3_MICROSTEPS);
-    stepperE3.start();
-  #endif
-}
-#endif
+  #define _TMC_INIT(A) do{ \
+    stepper##A.setMicrosteps(A##_MICROSTEPS); \
+    stepper##A.start(); \
+  }while(0)
 
+  void tmc_init() {
+    #if ENABLED(X_IS_TMC)
+      _TMC_INIT(X);
+    #endif
+    #if ENABLED(X2_IS_TMC)
+      _TMC_INIT(X2);
+    #endif
+    #if ENABLED(Y_IS_TMC)
+      _TMC_INIT(Y);
+    #endif
+    #if ENABLED(Y2_IS_TMC)
+      _TMC_INIT(Y2);
+    #endif
+    #if ENABLED(Z_IS_TMC)
+      _TMC_INIT(Z);
+    #endif
+    #if ENABLED(Z2_IS_TMC)
+      _TMC_INIT(Z2);
+    #endif
+    #if ENABLED(E0_IS_TMC)
+      _TMC_INIT(E0);
+    #endif
+    #if ENABLED(E1_IS_TMC)
+      _TMC_INIT(E1);
+    #endif
+    #if ENABLED(E2_IS_TMC)
+      _TMC_INIT(E2);
+    #endif
+    #if ENABLED(E3_IS_TMC)
+      _TMC_INIT(E3);
+    #endif
+  }
+
+#endif // HAVE_TMCDRIVER
+
+//
+// TMC2130 Driver objects and inits
+//
 #if ENABLED(HAVE_TMC2130)
-  #define DEFINE_STEPPER(ST) TMC2130Stepper stepper##ST(ST##_ENABLE_PIN, ST##_DIR_PIN, ST##_STEP_PIN, ST##_CHIP_SELECT)
-// Stepper objects of TMC2130 steppers used
+
+  #include <SPI.h>
+  #include <TMC2130Stepper.h>
+
+  #define _TMC2130_DEFINE(ST) TMC2130Stepper stepper##ST(ST##_ENABLE_PIN, ST##_DIR_PIN, ST##_STEP_PIN, ST##_CHIP_SELECT)
+
+  // Stepper objects of TMC2130 steppers used
   #if ENABLED(X_IS_TMC2130)
-    DEFINE_STEPPER(X);
+    _TMC2130_DEFINE(X);
   #endif
   #if ENABLED(X2_IS_TMC2130)
-    DEFINE_STEPPER(X2);
+    _TMC2130_DEFINE(X2);
   #endif
   #if ENABLED(Y_IS_TMC2130)
-    DEFINE_STEPPER(Y);
+    _TMC2130_DEFINE(Y);
   #endif
   #if ENABLED(Y2_IS_TMC2130)
-    DEFINE_STEPPER(Y2);
+    _TMC2130_DEFINE(Y2);
   #endif
   #if ENABLED(Z_IS_TMC2130)
-    DEFINE_STEPPER(Z);
+    _TMC2130_DEFINE(Z);
   #endif
   #if ENABLED(Z2_IS_TMC2130)
-    DEFINE_STEPPER(Z2);
+    _TMC2130_DEFINE(Z2);
   #endif
   #if ENABLED(E0_IS_TMC2130)
-    DEFINE_STEPPER(E0);
+    _TMC2130_DEFINE(E0);
   #endif
   #if ENABLED(E1_IS_TMC2130)
-    DEFINE_STEPPER(E1);
+    _TMC2130_DEFINE(E1);
   #endif
   #if ENABLED(E2_IS_TMC2130)
-    DEFINE_STEPPER(E2);
+    _TMC2130_DEFINE(E2);
   #endif
   #if ENABLED(E3_IS_TMC2130)
-    DEFINE_STEPPER(E3);
+    _TMC2130_DEFINE(E3);
   #endif
 
-// Use internal reference voltage for current calculations. This is the default.
-// Following values from Trinamic's spreadsheet with values for a NEMA17 (42BYGHW609)
-  void tmc2130_init(TMC2130Stepper &st, uint16_t max_current, uint16_t microsteps) {
+  // Use internal reference voltage for current calculations. This is the default.
+  // Following values from Trinamic's spreadsheet with values for a NEMA17 (42BYGHW609)
+  void tmc2130_init(TMC2130Stepper &st, const uint16_t max_current, const uint16_t microsteps) {
     st.begin();
     st.setCurrent(st.getCurrent(), R_SENSE, HOLD_MULTIPLIER);
     st.microsteps(microsteps);
@@ -183,46 +179,45 @@ void tmc_init() {
     #endif
   }
 
-  #define TMC2130_INIT(ST) tmc2130_init(stepper##ST, ST##_MAX_CURRENT, ST##_MICROSTEPS);
+  #define _TMC2130_INIT(ST) tmc2130_init(stepper##ST, ST##_MAX_CURRENT, ST##_MICROSTEPS)
 
   void tmc2130_init() {
-    delay(500); // Let power stabilize before we start configuring the steppers
+    delay(500); // Let power stabilize before configuring the steppers
     #if ENABLED(X_IS_TMC2130)
-      TMC2130_INIT(X)
+      _TMC2130_INIT(X);
     #endif
     #if ENABLED(X2_IS_TMC2130)
-      TMC2130_INIT(X2)
+      _TMC2130_INIT(X2);
     #endif
     #if ENABLED(Y_IS_TMC2130)
-      TMC2130_INIT(Y)
+      _TMC2130_INIT(Y);
     #endif
     #if ENABLED(Y2_IS_TMC2130)
-      TMC2130_INIT(Y2)
+      _TMC2130_INIT(Y2);
     #endif
     #if ENABLED(Z_IS_TMC2130)
-      TMC2130_INIT(Z)
+      _TMC2130_INIT(Z);
     #endif
     #if ENABLED(Z2_IS_TMC2130)
-      TMC2130_INIT(Z2)
+      _TMC2130_INIT(Z2);
     #endif
     #if ENABLED(E0_IS_TMC2130)
-      TMC2130_INIT(E0)
+      _TMC2130_INIT(E0);
     #endif
     #if ENABLED(E1_IS_TMC2130)
-      TMC2130_INIT(E1)
+      _TMC2130_INIT(E1);
     #endif
     #if ENABLED(E2_IS_TMC2130)
-      TMC2130_INIT(E2)
+      _TMC2130_INIT(E2);
     #endif
     #if ENABLED(E3_IS_TMC2130)
-      TMC2130_INIT(E3)
+      _TMC2130_INIT(E3);
     #endif
 
     TMC2130_ADV()
   }
-#endif
+#endif // HAVE_TMC2130
 
-// L6470 Driver objects and inits
 
 //
 // L6470 Driver objects and inits
@@ -232,36 +227,38 @@ void tmc_init() {
   #include <SPI.h>
   #include <L6470.h>
 
+  #define _L6470_DEFINE(ST) L6470 stepper##ST(ST##_ENABLE_PIN)
+
   // L6470 Stepper objects
   #if ENABLED(X_IS_L6470)
-    L6470 stepperX(X_ENABLE_PIN);
+    _L6470_DEFINE(X);
   #endif
   #if ENABLED(X2_IS_L6470)
-    L6470 stepperX2(X2_ENABLE_PIN);
+    _L6470_DEFINE(X2);
   #endif
   #if ENABLED(Y_IS_L6470)
-    L6470 stepperY(Y_ENABLE_PIN);
+    _L6470_DEFINE(Y);
   #endif
   #if ENABLED(Y2_IS_L6470)
-    L6470 stepperY2(Y2_ENABLE_PIN);
+    _L6470_DEFINE(Y2);
   #endif
   #if ENABLED(Z_IS_L6470)
-    L6470 stepperZ(Z_ENABLE_PIN);
+    _L6470_DEFINE(Z);
   #endif
   #if ENABLED(Z2_IS_L6470)
-    L6470 stepperZ2(Z2_ENABLE_PIN);
+    _L6470_DEFINE(Z2);
   #endif
   #if ENABLED(E0_IS_L6470)
-    L6470 stepperE0(E0_ENABLE_PIN);
+    _L6470_DEFINE(E0);
   #endif
   #if ENABLED(E1_IS_L6470)
-    L6470 stepperE1(E1_ENABLE_PIN);
+    _L6470_DEFINE(E1);
   #endif
   #if ENABLED(E2_IS_L6470)
-    L6470 stepperE2(E2_ENABLE_PIN);
+    _L6470_DEFINE(E2);
   #endif
   #if ENABLED(E3_IS_L6470)
-    L6470 stepperE3(E3_ENABLE_PIN);
+    _L6470_DEFINE(E3);
   #endif
 
   #define _L6470_INIT(A) do{ \
