@@ -10473,47 +10473,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
   #if ENABLED(AUTOMATIC_CURRENT_CONTROL)
     checkOverTemp();
-  #endif#if defined(HAVE_TMC2130)
-  /**
-   * M906: Set motor current in milliamps using axis codes X, Y, Z, E
-   * Report driver currents when no axis specified
-   * Requires Trinamic TMC2130 stepper drivers with the supporting library from
-   * https://github.com/teemuatlut/TMC2130Stepper
-   */
-  static void tmc2130_setCurrent(int mA, TMC2130Stepper &st, const char *name) {
-    SERIAL_ECHO(name);
-    SERIAL_ECHOPGM(" axis driver current: ");
-    SERIAL_ECHOLN(mA);
-    st.setCurrent(mA, 0.11, 0.5);
-  }
-  static void tmc2130_getCurrent(TMC2130Stepper &st, const char *name) {
-    SERIAL_ECHO(name);
-    SERIAL_ECHOPGM(" axis driver current: ");
-    SERIAL_ECHOLN(st.getCurrent());
-  }
-  inline void gcode_M906() {
-    uint16_t values[NUM_AXIS];
-    for (uint8_t st = 0; st < NUM_AXIS; st++) {
-      values[st] = code_seen(axis_codes[st]) ? code_value_int() : 0;
-    }
-
-    #if defined(X_IS_TMC2130)
-    	if (values[0]) tmc2130_setCurrent(values[0], stepperX, "X");
-      else tmc2130_getCurrent(stepperX, "X");
-    #endif
-    #if defined(Y_IS_TMC2130)
-      if (values[1]) tmc2130_setCurrent(values[1], stepperY, "Y");
-      else tmc2130_getCurrent(stepperY, "Y");
-    #endif
-    #if defined(Z_IS_TMC2130)
-      if (values[2]) tmc2130_setCurrent(values[2], stepperZ, "Z");
-      else tmc2130_getCurrent(stepperZ, "Z");
-    #endif
-    #if defined(E0_IS_TMC2130)
-      if (values[3]) tmc2130_setCurrent(values[3], stepperE0, "E");
-      else tmc2130_getCurrent(stepperE0, "E");
-    #endif
-  }
+  #endif
 
   planner.check_axes_activity();
 }
