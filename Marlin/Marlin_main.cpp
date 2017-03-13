@@ -10223,19 +10223,19 @@ void disable_all_steppers() {
 
 #if ENABLED(AUTOMATIC_CURRENT_CONTROL)
 
-  void automatic_current_control(const TMC2130Stepper &st) {
+  void automatic_current_control(TMC2130Stepper &st) {
     #if CURRENT_STEP > 0
-      const bool is_otpw = st.checkOT(), // Check otpw even if we don't adjust. Allows for flag inspection.
+      bool is_otpw = st.checkOT(), // Check otpw even if we don't adjust. Allows for flag inspection.
                  is_otpw_triggered = st.getOTPW();
 
       if (!is_otpw && !is_otpw_triggered) {
         // OTPW bit not triggered yet -> Increase current
-        const uint16_t current = st.getCurrent() + CURRENT_STEP;
-        if (current <= AUTO_ADJUST_MAX) st.SilentStepStick2130(current);
+        uint16_t current = st.getCurrent() + CURRENT_STEP;
+        if (current <= AUTO_ADJUST_MAX) st.setCurrent(current, R_SENSE, HOLD_MULTIPLIER);
       }
       else if (is_otpw && is_otpw_triggered) {
         // OTPW bit triggered, triggered flag raised -> Decrease current
-        st.SilentStepStick2130((float)st.getCurrent() - CURRENT_STEP);
+        st.setCurrent((float)st.getCurrent() - CURRENT_STEP, R_SENSE, HOLD_MULTIPLIER);
       }
       // OTPW bit cleared (we've cooled down), triggered flag still raised until manually cleared -> Do nothing, we're good
     #endif
