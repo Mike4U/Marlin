@@ -160,21 +160,28 @@
 
   // Use internal reference voltage for current calculations. This is the default.
   // Following values from Trinamic's spreadsheet with values for a NEMA17 (42BYGHW609)
+  // https://www.trinamic.com/products/integrated-circuits/details/tmc2130/
   void tmc2130_init(TMC2130Stepper &st, const uint16_t max_current, const uint16_t microsteps) {
     st.begin();
     st.setCurrent(st.getCurrent(), R_SENSE, HOLD_MULTIPLIER);
     st.microsteps(microsteps);
-    st.blank_time(24);
-    st.off_time(8);
+    st.blank_time(36);
+    st.off_time(5); // Only enables the driver if used with stealthChop
     st.interpolate(INTERPOLATE);
     #if ENABLED(STEALTHCHOP)
+      st.stealth_freq(1); // f_pwm = 2/683 f_clk
+      st.stealth_autoscale(1);
+      st.stealth_gradient(4);
       st.stealthChop(1);
+    #else
+      st.hysterisis_start(0); // HSTRT = 1
+      st.hysterisis_low(1); // HEND = -2
     #endif
     #if ENABLED(SENSORLESS_HOMING)
+      // Not reliably functional yet.
       st.coolstep_min_speed(1048575);
       st.sg_stall_value(STALL_THRESHOLD);
-      st.sg_filter(1);
-      st.diag1_stall(1);
+      st.diag1_stall(1); // diag1 gets wired to endstop pin
       st.diag1_active_high(1);
     #endif
   }
