@@ -10228,10 +10228,22 @@ void disable_all_steppers() {
     // Check otpw even if we don't use automatic control. Allows for flag inspection.
     bool is_otpw = st.checkOT();
 
-  void automatic_current_control(TMC2130Stepper &st) {
-    #if CURRENT_STEP > 0
-      bool is_otpw = st.checkOT(), // Check otpw even if we don't adjust. Allows for flag inspection.
-                 is_otpw_triggered = st.getOTPW();
+    // Report if a warning was triggered
+    static bool previous_otpw = false;
+    if (is_otpw && !previous_otpw) {
+      char timestamp[10];
+      duration_t elapsed = print_job_timer.duration();
+      bool has_days = (elapsed.value > 60*60*24L);
+      uint8_t len = elapsed.toDigital(timestamp, has_days);
+      SERIAL_ECHO( timestamp );
+      SERIAL_ECHO(": ");
+      SERIAL_ECHO(axisID);
+      SERIAL_ECHOLNPGM(" driver overtemperature warning!");
+    }
+    previous_otpw = is_otpw;
+
+    #if CURRENT_STEP > 0 && AUTOMATIC_CURRENT_CONTROL
+      bool is_otpw_triggered = st.getOTPW();
 
       if (!is_otpw && !is_otpw_triggered) {
         // OTPW bit not triggered yet -> Increase current
@@ -10251,39 +10263,39 @@ void disable_all_steppers() {
     if (ELAPSED(millis(), next_cOT)) {
       next_cOT = millis() + 5000;
       #if ENABLED(X_IS_TMC2130)
-        automatic_current_control(stepperX);
+        automatic_current_control(stepperX, "X");
       #endif
       #if ENABLED(Y_IS_TMC2130)
-        automatic_current_control(stepperY);
+        automatic_current_control(stepperY, "Y");
       #endif
       #if ENABLED(Z_IS_TMC2130)
-        automatic_current_control(stepperZ);
+        automatic_current_control(stepperZ, "Z");
       #endif
       #if ENABLED(X2_IS_TMC2130)
-        automatic_current_control(stepperX2);
+        automatic_current_control(stepperX2, "X2");
       #endif
       #if ENABLED(Y2_IS_TMC2130)
-        automatic_current_control(stepperY2);
+        automatic_current_control(stepperY2, "Y2");
       #endif
       #if ENABLED(Z2_IS_TMC2130)
-        automatic_current_control(stepperZ2);
+        automatic_current_control(stepperZ2, "Z2");
       #endif
       #if ENABLED(E0_IS_TMC2130)
-        automatic_current_control(stepperE0);
+        automatic_current_control(stepperE0, "E0");
       #endif
       #if ENABLED(E1_IS_TMC2130)
-        automatic_current_control(stepperE1);
+        automatic_current_control(stepperE1, "E1");
       #endif
       #if ENABLED(E2_IS_TMC2130)
-        automatic_current_control(stepperE2);
+        automatic_current_control(stepperE2, "E2");
       #endif
       #if ENABLED(E3_IS_TMC2130)
-        automatic_current_control(stepperE3);
+        automatic_current_control(stepperE3, "E3");
       #endif
     }
   }
 
-#endif // AUTOMATIC_CURRENT_CONTROL
+#endif // HAVE_TMC2130
 
 /**
  * Manage several activities:
