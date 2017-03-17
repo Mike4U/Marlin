@@ -10222,7 +10222,11 @@ void disable_all_steppers() {
   disable_e3();
 }
 
-#if ENABLED(AUTOMATIC_CURRENT_CONTROL)
+#if ENABLED(HAVE_TMC2130)
+
+  void automatic_current_control(TMC2130Stepper &st, String axisID) {
+    // Check otpw even if we don't use automatic control. Allows for flag inspection.
+    bool is_otpw = st.checkOT();
 
   void automatic_current_control(TMC2130Stepper &st) {
     #if CURRENT_STEP > 0
@@ -10472,7 +10476,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     handle_status_leds();
   #endif
 
-  #if ENABLED(AUTOMATIC_CURRENT_CONTROL)
+  #if ENABLED(HAVE_TMC2130)
     checkOverTemp();
   #endif
 
