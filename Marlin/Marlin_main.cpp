@@ -10242,7 +10242,7 @@ void disable_all_steppers() {
     }
     previous_otpw = is_otpw;
 
-    #if CURRENT_STEP > 0 && AUTOMATIC_CURRENT_CONTROL
+    #if CURRENT_STEP > 0 && ENABLED(AUTOMATIC_CURRENT_CONTROL)
       bool is_otpw_triggered = st.getOTPW();
 
       if (!is_otpw && !is_otpw_triggered) {
