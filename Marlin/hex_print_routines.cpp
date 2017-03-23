@@ -20,15 +20,28 @@
  *
  */
 
-/**
- * STB V1.1 pin assignments
- */
 
-#define BOARD_NAME "STB V1.1"
+#include "Marlin.h"
+#if ENABLED(AUTO_BED_LEVELING_UBL) || ENABLED(M100_FREE_MEMORY_WATCHER)
 
-#ifdef __AVR_ATmega1284P__
-  #define LARGE_FLASH true
-#endif
+#include "hex_print_routines.h"
 
-#define SANGUINOLOLU_V_1_2
-#include "pins_SANGUINOLOLU_11.h"
+void prt_hex_nibble(uint8_t n) {
+  if (n <= 9)
+    SERIAL_ECHO(n);
+  else
+    SERIAL_ECHO((char)('A' + n - 10));
+  delay(3);
+}
+
+void prt_hex_byte(uint8_t b) {
+  prt_hex_nibble((b & 0xF0) >> 4);
+  prt_hex_nibble(b & 0x0F);
+}
+
+void prt_hex_word(uint16_t w) {
+  prt_hex_byte((w & 0xFF00) >> 8);
+  prt_hex_byte(w & 0x0FF);
+}
+
+#endif // AUTO_BED_LEVELING_UBL || M100_FREE_MEMORY_WATCHER

@@ -164,6 +164,10 @@
   #include "stepper_indirection.h"
 #endif
 
+#if ENABLED(AUTO_BED_LEVELING_UBL)
+  #include "UBL.h"
+#endif
+
 #if ENABLED(ABL_BILINEAR_SUBDIVISION)
   extern void bed_level_virt_interpolate();
 #endif
@@ -246,7 +250,7 @@ void Config_Postprocess() {
   /**
    * M500 - Store Configuration
    */
-  void Config_StoreSettings()  {
+  bool Config_StoreSettings() {
     float dummy = 0.0f;
     char ver[4] = "000";
 
@@ -534,12 +538,20 @@ void Config_Postprocess() {
       SERIAL_ECHOPAIR("Settings Stored (", eeprom_size - (EEPROM_OFFSET));
       SERIAL_ECHOLNPGM(" bytes)");
     }
+
+    #if ENABLED(AUTO_BED_LEVELING_UBL)
+      ubl.store_state();
+      if (ubl.state.eeprom_storage_slot >= 0)
+        ubl.store_mesh(ubl.state.eeprom_storage_slot);
+    #endif
+
+    return !eeprom_write_error;
   }
 
   /**
    * M501 - Retrieve Configuration
    */
-  void Config_RetrieveSettings() {
+  bool Config_RetrieveSettings() {
 
     EEPROM_START();
     eeprom_read_error = false; // If set EEPROM_READ won't write into RAM
@@ -832,18 +844,58 @@ void Config_Postprocess() {
         SERIAL_ERRORLNPGM("EEPROM checksum mismatch");
         Config_ResetDefault();
       }
-   }
 
+      #if ENABLED(AUTO_BED_LEVELING_UBL)
+        ubl_eeprom_start = (eeprom_index + 32) & 0xFFF8; // Pad the end of configuration data so it
+                                                                          // can float up or down a little bit without
+                                                                          // disrupting the Unified Bed Leveling data
+        ubl.load_state();
+
+        SERIAL_ECHOPGM(" UBL ");
+        if (!ubl.state.active) SERIAL_ECHO("not ");
+        SERIAL_ECHOLNPGM("active!");
+
+        if (!ubl.sanity_check()) {
+          int tmp_mesh;                                // We want to preserve whether the UBL System is Active
+          bool tmp_active;                             // If it is, we want to preserve the Mesh that is being used.
+          tmp_mesh = ubl.state.eeprom_storage_slot;
+          tmp_active = ubl.state.active;
+          SERIAL_ECHOLNPGM("\nInitializing Bed Leveling State to current firmware settings.\n");
+          ubl.state = ubl.pre_initialized;             // Initialize with the pre_initialized data structure
+          ubl.state.eeprom_storage_slot = tmp_mesh;    // But then restore some data we don't want mangled
+          ubl.state.active = tmp_active;
+        }
+        else {
+          SERIAL_PROTOCOLPGM("?Unable to enable Unified Bed Leveling.\n");
+          ubl.state = ubl.pre_initialized;
+          ubl.reset();
+          ubl.store_state();
+        }
+
+        if (ubl.state.eeprom_storage_slot >= 0) {
+          ubl.load_mesh(ubl.state.eeprom_storage_slot);
+          SERIAL_ECHOPAIR("Mesh ", ubl.state.eeprom_storage_slot);
+          SERIAL_ECHOLNPGM(" loaded from storage.");
+        }
+        else {
+          ubl.reset();
+          SERIAL_ECHOPGM("UBL System reset() \n");
+        }
+      #endif
+    }
     #if ENABLED(EEPROM_CHITCHAT)
       Config_PrintSettings();
     #endif
+
+    return !eeprom_read_error;
   }
 
 #else // !EEPROM_SETTINGS
 
-  void Config_StoreSettings() {
+  bool Config_StoreSettings() {
     SERIAL_ERROR_START;
     SERIAL_ERRORLNPGM("EEPROM disabled");
+    return false;
   }
 
 #endif // !EEPROM_SETTINGS
@@ -1126,6 +1178,42 @@ void Config_ResetDefault() {
       SERIAL_ECHOPAIR(" Z", home_offset[Z_AXIS]);
       SERIAL_EOL;
     #endif
+  #if ENABLED(AUTO_BED_LEVELING_UBL)
+    SERIAL_ECHOLNPGM("Unified Bed Leveling:");
+    CONFIG_ECHO_START;
+
+    SERIAL_ECHOPGM("System is: ");
+    if (ubl.state.active)
+       SERIAL_ECHOLNPGM("Active\n");
+    else
+       SERIAL_ECHOLNPGM("Deactive\n");
+
+    SERIAL_ECHOPAIR("Active Mesh Slot: ", ubl.state.eeprom_storage_slot);
+    SERIAL_EOL;
+
+    SERIAL_ECHOPGM("z_offset: ");
+    SERIAL_ECHO_F(ubl.state.z_offset, 6);
+    SERIAL_EOL;
+
+    SERIAL_ECHOPAIR("EEPROM can hold ", (int)((E2END - sizeof(ubl.state) - ubl_eeprom_start) / sizeof(z_values)));
+    SERIAL_ECHOLNPGM(" meshes. \n");
+
+    SERIAL_ECHOPAIR("\nUBL_MESH_NUM_X_POINTS  ", UBL_MESH_NUM_X_POINTS);
+    SERIAL_ECHOPAIR("\nUBL_MESH_NUM_Y_POINTS  ", UBL_MESH_NUM_Y_POINTS);
+
+    SERIAL_ECHOPAIR("\nUBL_MESH_MIN_X         ", UBL_MESH_MIN_X);
+    SERIAL_ECHOPAIR("\nUBL_MESH_MIN_Y         ", UBL_MESH_MIN_Y);
+
+    SERIAL_ECHOPAIR("\nUBL_MESH_MAX_X         ", UBL_MESH_MAX_X);
+    SERIAL_ECHOPAIR("\nUBL_MESH_MAX_Y         ", UBL_MESH_MAX_Y);
+
+    SERIAL_ECHOPGM("\nMESH_X_DIST        ");
+    SERIAL_ECHO_F(MESH_X_DIST, 6);
+    SERIAL_ECHOPGM("\nMESH_Y_DIST        ");
+    SERIAL_ECHO_F(MESH_Y_DIST, 6);
+    SERIAL_EOL;
+    SERIAL_EOL;
+  #endif
 
     #if HOTENDS > 1
       CONFIG_ECHO_START;

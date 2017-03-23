@@ -20,15 +20,14 @@
  *
  */
 
-/**
- * STB V1.1 pin assignments
- */
+#ifndef HEX_PRINT_ROUTINES_H
+#define HEX_PRINT_ROUTINES_H
 
-#define BOARD_NAME "STB V1.1"
+//
+// 3 support routines to print hex numbers.  We can print a nibble, byte and word
+//
+void prt_hex_nibble(uint8_t n);
+void prt_hex_byte(uint8_t b);
+void prt_hex_word(uint16_t w);
 
-#ifdef __AVR_ATmega1284P__
-  #define LARGE_FLASH true
-#endif
-
-#define SANGUINOLOLU_V_1_2
-#include "pins_SANGUINOLOLU_11.h"
+#endif // HEX_PRINT_ROUTINES_H
