@@ -923,6 +923,28 @@
   //#define E3_CHIP_SELECT    -1
 
   /**
+
+  /**
+   * The driver will switch to spreadCycle when stepper speed is over HYBRID_THRESHOLD.
+   * This mode allows for faster movements at the expense of higher noise levels.
+   * STEALTHCHOP needs to be enabled.
+   */
+  //#define HYBRID_THRESHOLD
+
+  #if ENABLED(HYBRID_THRESHOLD)
+    #define X_HYBRID_THRESHOLD    100  // [mm/s], set to 0 to disable
+    #define X2_HYBRID_THRESHOLD   100
+    #define Y_HYBRID_THRESHOLD    100
+    #define Y2_HYBRID_THRESHOLD   100
+    #define Z_HYBRID_THRESHOLD      4
+    #define Z2_HYBRID_THRESHOLD     4
+    #define E0_HYBRID_THRESHOLD    30
+    #define E1_HYBRID_THRESHOLD    30
+    #define E2_HYBRID_THRESHOLD    30
+    #define E3_HYBRID_THRESHOLD    30
+  #endif
+
+  /**
    * You can set your own advanced settings by filling in predefined functions.
    * A list of available functions can be found on the library github page
    * https://github.com/teemuatlut/TMC2130Stepper

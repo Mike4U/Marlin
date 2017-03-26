@@ -161,7 +161,7 @@
   // Use internal reference voltage for current calculations. This is the default.
   // Following values from Trinamic's spreadsheet with values for a NEMA17 (42BYGHW609)
   // https://www.trinamic.com/products/integrated-circuits/details/tmc2130/
-  void tmc2130_init(TMC2130Stepper &st, const uint16_t microsteps) {
+  void tmc2130_init(TMC2130Stepper &st, const uint16_t microsteps, const uint16_t threshold, const uint16_t spmm) {
     st.begin();
     st.setCurrent(st.getCurrent(), R_SENSE, HOLD_MULTIPLIER);
     st.microsteps(microsteps);
@@ -173,6 +173,9 @@
       st.stealth_autoscale(1);
       st.stealth_gradient(4);
       st.stealthChop(1);
+      #if ENABLED(HYBRID_THRESHOLD)
+        if (threshold > 0) st.stealth_max_speed(12650000*microsteps/(256*threshold*spmm));
+      #endif
     #else
       st.hysterisis_start(0); // HSTRT = 1
       st.hysterisis_low(1); // HEND = -2
@@ -186,39 +189,40 @@
     #endif
   }
 
-  #define _TMC2130_INIT(ST) tmc2130_init(stepper##ST, ST##_MICROSTEPS)
+  #define _TMC2130_INIT(ST, SPMM) tmc2130_init(stepper##ST, ST##_MICROSTEPS, ST##_HYBRID_THRESHOLD, SPMM);
 
   void tmc2130_init() {
     delay(500); // Let power stabilize before configuring the steppers
+    uint16_t steps_per_mm[] = DEFAULT_AXIS_STEPS_PER_UNIT;
     #if ENABLED(X_IS_TMC2130)
-      _TMC2130_INIT(X);
+      _TMC2130_INIT( X, steps_per_mm[0]);
     #endif
     #if ENABLED(X2_IS_TMC2130)
-      _TMC2130_INIT(X2);
+      _TMC2130_INIT(X2, steps_per_mm[0]);
     #endif
     #if ENABLED(Y_IS_TMC2130)
-      _TMC2130_INIT(Y);
+      _TMC2130_INIT( Y, steps_per_mm[1]);
     #endif
     #if ENABLED(Y2_IS_TMC2130)
-      _TMC2130_INIT(Y2);
+      _TMC2130_INIT(Y2, steps_per_mm[1]);
     #endif
     #if ENABLED(Z_IS_TMC2130)
-      _TMC2130_INIT(Z);
+      _TMC2130_INIT( Z, steps_per_mm[2]);
     #endif
     #if ENABLED(Z2_IS_TMC2130)
-      _TMC2130_INIT(Z2);
+      _TMC2130_INIT(Z2, steps_per_mm[2]);
     #endif
     #if ENABLED(E0_IS_TMC2130)
-      _TMC2130_INIT(E0);
+      _TMC2130_INIT(E0, steps_per_mm[3]);
     #endif
     #if ENABLED(E1_IS_TMC2130)
-      _TMC2130_INIT(E1);
+      _TMC2130_INIT(E1, steps_per_mm[4]);
     #endif
     #if ENABLED(E2_IS_TMC2130)
-      _TMC2130_INIT(E2);
+      _TMC2130_INIT(E2, steps_per_mm[5]);
     #endif
     #if ENABLED(E3_IS_TMC2130)
-      _TMC2130_INIT(E3);
+      _TMC2130_INIT(E3, steps_per_mm[6]);
     #endif
 
     TMC2130_ADV()
