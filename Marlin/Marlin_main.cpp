@@ -10330,18 +10330,28 @@ void disable_all_steppers() {
     previous_otpw = is_otpw;
 
     #if CURRENT_STEP > 0 && ENABLED(AUTOMATIC_CURRENT_CONTROL)
-      bool is_otpw_triggered = st.getOTPW();
-
-      if (!is_otpw && !is_otpw_triggered) {
-        // OTPW bit not triggered yet -> Increase current
-        uint16_t current = st.getCurrent() + CURRENT_STEP;
+      /*
+       * Decrease current if is_otpw is true.
+       * Bail out if driver is disabled.
+       * Increase current if OTPW has not been triggered yet.
+       **/
+      uint16_t current = st.getCurrent();
+      if (is_otpw) {
+        st.setCurrent(current - CURRENT_STEP, R_SENSE, HOLD_MULTIPLIER);
+        #ifdef REPORT_CURRENT_CHANGE
+          MYSERIAL.print("Current decreased to: ");
+          MYSERIAL.print(st.getCurrent());
+        #endif
+      } else if(st.isEnabled()) {
+        return;
+      } else if (!is_otpw && !st.getOTPW()) {
+        current += CURRENT_STEP;
         if (current <= AUTO_ADJUST_MAX) st.setCurrent(current, R_SENSE, HOLD_MULTIPLIER);
+        #ifdef REPORT_CURRENT_CHANGE
+          MYSERIAL.print("Current increased to: ");
+          MYSERIAL.print(st.getCurrent());
+        #endif
       }
-      else if (is_otpw && is_otpw_triggered) {
-        // OTPW bit triggered, triggered flag raised -> Decrease current
-        st.setCurrent((float)st.getCurrent() - CURRENT_STEP, R_SENSE, HOLD_MULTIPLIER);
-      }
-      // OTPW bit cleared (we've cooled down), triggered flag still raised until manually cleared -> Do nothing, we're good
     #endif
   }
 
