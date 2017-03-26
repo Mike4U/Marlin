@@ -855,7 +855,7 @@
    * This is still an experimental feature.
    * Increase current every 5s by CURRENT_STEP until stepper temperature prewarn gets triggered,
    * then decrease current by CURRENT_STEP until temperature prewarn is cleared.
-   * Adjusting starts from X/Y/Z/E_MAX_CURRENT but will not increase over AUTO_ADJUST_MAX
+   * Adjusting starts from X/Y/Z/E_CURRENT but will not increase over AUTO_ADJUST_MAX
    */
   //#define AUTOMATIC_CURRENT_CONTROL
   #define CURRENT_STEP          50  // [mA]
@@ -882,43 +882,43 @@
   #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
   #define INTERPOLATE          1  // Interpolate X/Y/Z_MICROSTEPS to 256
 
-  #define X_MAX_CURRENT     1000  // rms current in mA
+  #define X_CURRENT         1000  // rms current in mA. Multiply by 1.41 for peak current.
   #define X_MICROSTEPS        16  // FULLSTEP..256
   #define X_CHIP_SELECT       40  // Pin
 
-  #define Y_MAX_CURRENT     1000
+  #define Y_CURRENT         1000
   #define Y_MICROSTEPS        16
   #define Y_CHIP_SELECT       42
 
-  #define Z_MAX_CURRENT     1000
+  #define Z_CURRENT         1000
   #define Z_MICROSTEPS        16
   #define Z_CHIP_SELECT       65
 
-  //#define X2_MAX_CURRENT  1000
+  //#define X2_CURRENT      1000
   //#define X2_MICROSTEPS     16
   //#define X2_CHIP_SELECT    -1
 
-  //#define Y2_MAX_CURRENT  1000
+  //#define Y2_CURRENT      1000
   //#define Y2_MICROSTEPS     16
   //#define Y2_CHIP_SELECT    -1
 
-  //#define Z2_MAX_CURRENT  1000
+  //#define Z2_CURRENT      1000
   //#define Z2_MICROSTEPS     16
   //#define Z2_CHIP_SELECT    -1
 
-  //#define E0_MAX_CURRENT  1000
+  //#define E0_CURRENT      1000
   //#define E0_MICROSTEPS     16
   //#define E0_CHIP_SELECT    -1
 
-  //#define E1_MAX_CURRENT  1000
+  //#define E1_CURRENT      1000
   //#define E1_MICROSTEPS     16
   //#define E1_CHIP_SELECT    -1
 
-  //#define E2_MAX_CURRENT  1000
+  //#define E2_CURRENT      1000
   //#define E2_MICROSTEPS     16
   //#define E2_CHIP_SELECT    -1
 
-  //#define E3_MAX_CURRENT  1000
+  //#define E3_CURRENT      1000
   //#define E3_MICROSTEPS     16
   //#define E3_CHIP_SELECT    -1
 

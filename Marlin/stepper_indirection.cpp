@@ -161,7 +161,7 @@
   // Use internal reference voltage for current calculations. This is the default.
   // Following values from Trinamic's spreadsheet with values for a NEMA17 (42BYGHW609)
   // https://www.trinamic.com/products/integrated-circuits/details/tmc2130/
-  void tmc2130_init(TMC2130Stepper &st, const uint16_t max_current, const uint16_t microsteps) {
+  void tmc2130_init(TMC2130Stepper &st, const uint16_t microsteps) {
     st.begin();
     st.setCurrent(st.getCurrent(), R_SENSE, HOLD_MULTIPLIER);
     st.microsteps(microsteps);
@@ -186,7 +186,7 @@
     #endif
   }
 
-  #define _TMC2130_INIT(ST) tmc2130_init(stepper##ST, ST##_MAX_CURRENT, ST##_MICROSTEPS)
+  #define _TMC2130_INIT(ST) tmc2130_init(stepper##ST, ST##_MICROSTEPS)
 
   void tmc2130_init() {
     delay(500); // Let power stabilize before configuring the steppers
