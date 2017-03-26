@@ -931,18 +931,16 @@
    */
   //#define HYBRID_THRESHOLD
 
-  #if ENABLED(HYBRID_THRESHOLD)
-    #define X_HYBRID_THRESHOLD    100  // [mm/s], set to 0 to disable
-    #define X2_HYBRID_THRESHOLD   100
-    #define Y_HYBRID_THRESHOLD    100
-    #define Y2_HYBRID_THRESHOLD   100
-    #define Z_HYBRID_THRESHOLD      4
-    #define Z2_HYBRID_THRESHOLD     4
-    #define E0_HYBRID_THRESHOLD    30
-    #define E1_HYBRID_THRESHOLD    30
-    #define E2_HYBRID_THRESHOLD    30
-    #define E3_HYBRID_THRESHOLD    30
-  #endif
+  #define X_HYBRID_THRESHOLD    100  // [mm/s], set to 0 to individually disable
+  #define X2_HYBRID_THRESHOLD   100
+  #define Y_HYBRID_THRESHOLD    100
+  #define Y2_HYBRID_THRESHOLD   100
+  #define Z_HYBRID_THRESHOLD      4
+  #define Z2_HYBRID_THRESHOLD     4
+  #define E0_HYBRID_THRESHOLD    30
+  #define E1_HYBRID_THRESHOLD    30
+  #define E2_HYBRID_THRESHOLD    30
+  #define E3_HYBRID_THRESHOLD    30
 
   /**
    * You can set your own advanced settings by filling in predefined functions.
