@@ -848,19 +848,6 @@
 //#define HAVE_TMC2130
 
 #if ENABLED(HAVE_TMC2130)
-  #define STEALTHCHOP
-
-  /**
-   * Let Marlin automatically control stepper current.
-   * This is still an experimental feature.
-   * Increase current every 5s by CURRENT_STEP until stepper temperature prewarn gets triggered,
-   * then decrease current by CURRENT_STEP until temperature prewarn is cleared.
-   * Adjusting starts from X/Y/Z/E_CURRENT but will not increase over AUTO_ADJUST_MAX
-   */
-  //#define AUTOMATIC_CURRENT_CONTROL
-  #define CURRENT_STEP          50  // [mA]
-  #define AUTO_ADJUST_MAX     1300  // [mA], 1300mA_rms = 1840mA_peak
-  #define REPORT_CURRENT_CHANGE
 
   // CHOOSE YOUR MOTORS HERE, THIS IS MANDATORY
   //#define X_IS_TMC2130
@@ -883,7 +870,7 @@
   #define INTERPOLATE          1  // Interpolate X/Y/Z_MICROSTEPS to 256
 
   #define X_CURRENT         1000  // rms current in mA. Multiply by 1.41 for peak current.
-  #define X_MICROSTEPS        16  // FULLSTEP..256
+  #define X_MICROSTEPS        16  // 0..256
   #define X_CHIP_SELECT       40  // Pin
 
   #define Y_CURRENT         1000
@@ -923,6 +910,29 @@
   //#define E3_CHIP_SELECT    -1
 
   /**
+   * Use Trinamic's ultra quiet stepping mode.
+   * When disabled, Marlin will use spreadCycle stepping mode.
+   */
+  #define STEALTHCHOP
+
+  /**
+   * Let Marlin automatically control stepper current.
+   * This is still an experimental feature.
+   * Increase current every 5s by CURRENT_STEP until stepper temperature prewarn gets triggered,
+   * then decrease current by CURRENT_STEP until temperature prewarn is cleared.
+   * Adjusting starts from X/Y/Z/E_CURRENT but will not increase over AUTO_ADJUST_MAX
+   * Relevant g-codes:
+   * M906 - Set or get motor current in milliamps using axis codes X, Y, Z, E. Report values if no axis codes given.
+   * M911 - Report stepper driver overtemperature pre-warn condition.
+   * M912 - Clear stepper driver overtemperature pre-warn condition flag.
+   */
+  //#define AUTOMATIC_CURRENT_CONTROL
+
+  #if ENABLED(AUTOMATIC_CURRENT_CONTROL)
+    #define CURRENT_STEP          50  // [mA]
+    #define AUTO_ADJUST_MAX     1300  // [mA], 1300mA_rms = 1840mA_peak
+    #define REPORT_CURRENT_CHANGE
+  #endif
 
   /**
    * The driver will switch to spreadCycle when stepper speed is over HYBRID_THRESHOLD.
